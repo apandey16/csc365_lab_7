@@ -16,6 +16,15 @@ reservationInfo = {
         "adults": 0
     }
 
+reservationSearchInfo = {
+        'firstName': "",
+        'lastName': "",
+        "startDate": "",
+        "endDate": "",
+        "roomCode": "",
+        "reservationCode": ""
+    }
+
 def reviewReservationInfo():
     # Might want to add more robust error checking here
     print("\nERROR\n")
@@ -108,6 +117,23 @@ def cancelReservation():
         else:
             print("Invalid reservation code. Please try again.")
             time.sleep(1)
+
+
+def detailedReservationInfo():
+    os.system('clear')
+    header()
+    print("Search for a reservation using the following fields. \n")
+    print("You may fill in as many or as few fields as you would like to search by. \n")
+
+    reservationSearchInfo['firstName'] = input("First Name: ")
+    reservationSearchInfo['lastName'] = input("Last Name: ")
+    reservationSearchInfo['startDate'] = input("Start Date (Inclusive): ")
+    reservationSearchInfo['endDate'] = input("End Date (Inclusive): ")
+    reservationSearchInfo['roomCode'] = input("Room Code: ")
+    reservationSearchInfo['reservationCode'] = input("Reservation Code: ")
+
+    
+
         
     
 
