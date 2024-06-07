@@ -94,5 +94,23 @@ def gatherReservationInfo():
         time.sleep(1)
         gatherReservationInfo()
 
+def cancelReservation():
+    os.system('clear')
+    header()
+    print("Reservation Cancelation\n") 
+
+    while True:
+
+        resCode = input("Please enter the reservation code to cancel a reservation:\n")
+        
+        if resCode.isalnum():
+            return resCode
+        else:
+            print("Invalid reservation code. Please try again.")
+            time.sleep(1)
+        
+    
+
+
 if __name__ == '__main__' :
     gatherReservationInfo()

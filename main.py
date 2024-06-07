@@ -2,7 +2,7 @@
 import os
 import time
 from utils import header
-from reservation import gatherReservationInfo
+from reservation import gatherReservationInfo, cancelReservation
 
 def mainScreen():
     print("1. Rooms and Rates")
@@ -21,6 +21,8 @@ def main():
     os.system('clear')
     header()
 
+
+    # TODO:  Add verification to see if user to do more actions
     while True:
         userSelection = mainScreen()
 
@@ -31,7 +33,10 @@ def main():
             break
             # add stuff to connect with DB
         elif userSelection == '3':
-            pass
+            resCode = cancelReservation()
+            # Connect to DB, check reservation code and  delete reservation
+            print("Reservation " + resCode + " has been canceled")
+            break
         elif userSelection == '4':
             pass
         elif userSelection == '5':
