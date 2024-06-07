@@ -111,7 +111,7 @@ def cancelReservation():
     while True:
 
         resCode = input("Please enter the reservation code to cancel a reservation:\n")
-        
+
         if resCode.isalnum():
             return resCode
         else:
@@ -132,7 +132,7 @@ def detailedReservationInfo():
     reservationSearchInfo['roomCode'] = input("Room Code: ")
     reservationSearchInfo['reservationCode'] = input("Reservation Code: ")
 
-    
+
 
         
     
