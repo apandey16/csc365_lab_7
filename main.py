@@ -2,7 +2,7 @@
 import os
 import time
 from utils import header
-from reservation import gatherReservationInfo, cancelReservation
+from reservation import gatherReservationInfo, cancelReservation, collectDetailedReservationInfo
 
 def mainScreen():
     print("1. Rooms and Rates")
@@ -38,7 +38,8 @@ def main():
             print("Reservation " + resCode + " has been canceled")
             break
         elif userSelection == '4':
-            pass
+            searchCritea = collectDetailedReservationInfo()
+
         elif userSelection == '5':
             pass
         elif userSelection == '6':
