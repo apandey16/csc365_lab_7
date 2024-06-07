@@ -1,1 +1,2 @@
-# csc365_lab_7
+# Reservation System
+Devs: Ansh, Cameron, AP
