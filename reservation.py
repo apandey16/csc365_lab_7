@@ -16,6 +16,15 @@ reservationInfo = {
         "adults": 0
     }
 
+reservationSearchInfo = {
+        'firstName': "",
+        'lastName': "",
+        "startDate": "",
+        "endDate": "",
+        "roomCode": "",
+        "reservationCode": ""
+    }
+
 def reviewReservationInfo():
     # Might want to add more robust error checking here
     print("\nERROR\n")
@@ -102,14 +111,80 @@ def cancelReservation():
     while True:
 
         resCode = input("Please enter the reservation code to cancel a reservation:\n")
-        
+
         if resCode.isalnum():
             return resCode
         else:
             print("Invalid reservation code. Please try again.")
             time.sleep(1)
-        
+
+
+def collectDetailedReservationInfo():
+    os.system('clear')
+    header()
+    print("Search for a reservation using the following fields. \n")
+    print("You may fill in as many or as few fields as you would like to search by. \n")
+    print("Leaving all fields blank with return all reservations \n")
+
+    reservationSearchInfo['firstName'] = input("First Name: ")
+    reservationSearchInfo['lastName'] = input("Last Name: ")
+    reservationSearchInfo['startDate'] = input("Start Date (Inclusive): ")
+    reservationSearchInfo['endDate'] = input("End Date (Inclusive): ")
+    reservationSearchInfo['roomCode'] = input("Room Code: ")
+    reservationSearchInfo['reservationCode'] = input("Reservation Code: ")
+
+    # isValid = reviewDetailedReservationInfo()
+
+    # if isValid:
+    confirmation = confirmDetailedReservation()
+    if confirmation:
+        return reservationSearchInfo
+    else:
+        collectDetailedReservationInfo()
+    # else:
+    #     time.sleep(1)
+    #     collectDetailedReservationInfo()
+
+
+# def reviewDetailedReservationInfo():
+#     if reservationSearchInfo['firstName'] == '\n' or (not reservationSearchInfo['firstName'].isalpha()):
+#         print("Invalid First Name")
+#         return False
+#     if not reservationSearchInfo['lastName'].isalpha():
+#         print("Invalid Last Name")
+#         return False
+#     if not reservationSearchInfo['roomCode'].isalnum():
+#         print("Invalid Room Code")
+#         return False
+#     if not reservationSearchInfo['reservationCode'].isalpha():
+#         print("Invalid Reservation Code Type")
+#         return False
+#     if not reservationSearchInfo['startDate'].isalpha():
+#         print("Invalid Start Date")
+#         return False
+#     if not reservationSearchInfo['endDate'].isalpha():
+#         print("Invalid End Date")
+#         return False
+#     return True
     
+def confirmDetailedReservation():
+    os.system('clear')
+    header()
+    print("Please review your search info:")
+    print("First Name: " + reservationSearchInfo['firstName'])
+    print("Last Name: " + reservationSearchInfo['lastName'])
+    print("Start Date: " + reservationSearchInfo['startDate'])
+    print("End Date: " + reservationSearchInfo['endDate'])
+    print("Room Code: " + reservationSearchInfo['roomCode'])
+    print("Reservation " + reservationSearchInfo['reservationCode'])
+    print("Is this information correct? (y/n)")
+    response = input()
+    if response == 'y':
+        time.sleep(0.5)
+        return True
+    else:
+        return False
+
 
 
 if __name__ == '__main__' :
