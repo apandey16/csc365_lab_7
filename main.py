@@ -4,7 +4,7 @@ import time
 import getpass
 import mysql.connector
 from utils import *
-from reservation import gatherReservationInfo, cancelReservation, collectDetailedReservationInfo
+from reservation import gatherReservationInfo, cancelReservation, collectDetailedReservationInfo, collectRevenueData
 
 # Don't change
 dbhost = 'mysql.labthreesixfive.com'
@@ -61,7 +61,7 @@ def main():
             searchCritea = collectDetailedReservationInfo()
 
         elif userSelection == '5':
-            revenue = collectRevenueData()
+            collectRevenueData(cursor)
         elif userSelection == '6':
             print("Goodbye!")
             cursor.close()

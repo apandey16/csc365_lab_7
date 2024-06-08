@@ -3,7 +3,8 @@
 
 import os
 import time
-from utils import header
+from utils import *
+from commands import *
 
 reservationInfo = {
         'firstName': "",
@@ -185,7 +186,57 @@ def confirmDetailedReservation():
     else:
         return False
 
+def collectRevenueData(connector):
+    os.system('clear')
+    roomToTuple = {
+        'AOB': 0,
+        'CAS': 1,
+        'FNA': 2,
+        'HBB': 3,
+        'IBD': 4,
+        'IBS': 5,
+        'MWC': 6,
+        'RND': 7,
+        'RTE': 8,
+        'TAA': 9
+    }
+    revByRoom = [
+        ['AOB', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['CAS', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['FNA', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['HBB', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['IBD', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['IBS', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['MWC', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['RND', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['RTE', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['TAA', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ['Total', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ]
+    results = executeQuery(connector, gatherRevenue)
+    months =['Room', 'Jan', 'Feb','Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Yearly\n']
+    for i in months:
+        print(i, end="\t")
+    print("")
+    for row in results:
+        room = row[0]
+        month = row[1]
+        monthlyRev = row[2]
+        revByRoom[roomToTuple.get(room)][month] = monthlyRev
+        revByRoom[10][month] += monthlyRev
+        revByRoom[roomToTuple.get(room)][13] += monthlyRev 
+        revByRoom[10][13] += monthlyRev
+    for room in revByRoom[:10]:
+        for item in room:
+            print(item, end="\t")
+        print("")
+        print("\n", end="")
 
+    for item in revByRoom[10]:
+        print(item, end=" ")
+    print("")
+    header()
+    
 
 if __name__ == '__main__' :
     gatherReservationInfo()
