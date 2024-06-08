@@ -14,5 +14,8 @@ if __name__ == '__main__':
     result = cursor.fetchall()
     print(result)
 
+    cursor.close()
+    conn.close()
+
 
 
