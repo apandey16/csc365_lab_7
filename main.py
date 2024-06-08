@@ -1,8 +1,16 @@
 
 import os
 import time
-from utils import header
+import getpass
+import mysql.connector
+from utils import *
 from reservation import gatherReservationInfo, cancelReservation, collectDetailedReservationInfo
+
+# Don't change
+dbhost = 'mysql.labthreesixfive.com'
+db = 'akpravee'
+#Set to curUser = <Username>
+curUser = 'cmorro01'
 
 def mainScreen():
     print("1. Rooms and Rates")
@@ -16,6 +24,18 @@ def mainScreen():
     return selection
 
 def main():
+    db_password = getpass.getpass()
+    conn = mysql.connector.connect(user=curUser, password=db_password,
+                                   host=dbhost,
+                                   database=db)
+    cursor = conn.cursor()
+    try:
+        setUpConnection = executeQuery(cursor, "show tables")
+        print("Connected to Database")
+        print(setUpConnection)
+    except:
+        print("Connection Issue to Database")
+    time.sleep(2)
     print("Welcome to Dijkstra's Inn: The Best Inn in Town\n")
     time.sleep(1)
     os.system('clear')
@@ -41,11 +61,13 @@ def main():
             searchCritea = collectDetailedReservationInfo()
 
         elif userSelection == '5':
-            pass
+            revenue = collectRevenueData()
         elif userSelection == '6':
             print("Goodbye!")
+            cursor.close()
+            conn.close()
             time.sleep(1)
-            os.clear()
+            os.system("clear")
             break
         else:
             print("Invalid command! Please try again!")
