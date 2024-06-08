@@ -53,7 +53,7 @@ def main():
             break
             # add stuff to connect with DB
         elif userSelection == '3':
-            resCode = cancelReservation()
+            resCode = cancelReservation(cursor)
             # Connect to DB, check reservation code and  delete reservation
             print("Reservation " + resCode + " has been canceled")
             break
