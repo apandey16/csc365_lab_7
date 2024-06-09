@@ -113,8 +113,8 @@ def cancelReservation(connector):
 
         resCode = input("Please enter the reservation code to cancel a reservation:\n")
 
-        if resCode.isalnum():
-            confirmation = input("Are you sure you want to cancel reservation " + resCode + "? (y/n)\n")
+        if resCode.isnumeric():
+            confirmation = input("Are you sure you want to try to cancel reservation " + resCode + "? (y/n)\n")
             if confirmation == 'y':
                 print("Processing...")
                 try:
