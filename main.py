@@ -4,7 +4,7 @@ import time
 import getpass
 import mysql.connector
 from utils import *
-from reservation import gatherReservationInfo, cancelReservation, collectDetailedReservationInfo, collectRevenueData
+from reservation import gatherRoomInfo, gatherReservationInfo, cancelReservation, collectDetailedReservationInfo, collectRevenueData
 
 # Don't change
 dbhost = 'mysql.labthreesixfive.com'
@@ -47,7 +47,7 @@ def main():
         userSelection = mainScreen()
 
         if userSelection == '1':
-            pass
+            gatherRoomInfo(cursor)
         elif userSelection == '2':
             reservationInfo = gatherReservationInfo()
             break

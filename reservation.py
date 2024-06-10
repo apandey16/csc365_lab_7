@@ -1,10 +1,21 @@
 # This file contains the code to get information from the user about the reservation.
-# Related to FR2
+# Related to FR1, FR2, FR5
 
 import os
 import time
 from utils import *
 from commands import *
+from prettytable import PrettyTable
+
+def gatherRoomInfo(connector):
+    os.system('clear')
+    results = executeQuery(connector, gatherRoomsList)
+    table = PrettyTable()
+    table.field_names = ["Room", "Room Name", "Beds", "Bed Type", "Maximum Occupancy", "Base Price", "Decor", "Popularity", "Earliest Opening", "Length Of Most Recent Stay"]
+    for row in results:
+        table.add_row(row)
+    print(table)
+    header()
 
 reservationInfo = {
         'firstName': "",
@@ -230,10 +241,6 @@ def collectRevenueData(connector):
         ['Total', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
     results = executeQuery(connector, gatherRevenue)
-    months =['Room', 'Jan', 'Feb','Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Yearly\n']
-    for i in months:
-        print(i, end="\t")
-    print("")
     for row in results:
         room = row[0]
         month = row[1]
@@ -242,15 +249,11 @@ def collectRevenueData(connector):
         revByRoom[10][month] += monthlyRev
         revByRoom[roomToTuple.get(room)][13] += monthlyRev 
         revByRoom[10][13] += monthlyRev
-    for room in revByRoom[:10]:
-        for item in room:
-            print(item, end="\t")
-        print("")
-        print("\n", end="")
-
-    for item in revByRoom[10]:
-        print(item, end=" ")
-    print("")
+    table = PrettyTable()
+    table.field_names = ['Room', 'Jan', 'Feb','Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Yearly']
+    for room in revByRoom:
+        table.add_row(room)
+    print(table)
     header()
 
 
