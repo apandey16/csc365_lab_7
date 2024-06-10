@@ -104,7 +104,7 @@ def gatherReservationInfo():
         time.sleep(1)
         gatherReservationInfo()
 
-def cancelReservation():
+def cancelReservation(connector):
     os.system('clear')
     header()
     print("Reservation Cancelation\n") 
@@ -113,8 +113,24 @@ def cancelReservation():
 
         resCode = input("Please enter the reservation code to cancel a reservation:\n")
 
-        if resCode.isalnum():
-            return resCode
+        if resCode.isnumeric():
+            confirmation = input("Are you sure you want to try to cancel reservation " + resCode + "? (y/n)\n")
+            if confirmation == 'y':
+                print("Processing...")
+                try:
+                    query = "DELETE FROM lab7_reservations WHERE code = %s;"
+                    results = executeQuery(connector, query, (resCode,))
+                    print("Reservation " + resCode + " has been canceled.")
+                    time.sleep(1)
+                    return results
+                except:
+                    print("An error occurred. Invalid room code.")
+                    time.sleep(1)
+            else:
+                print("Reservation " + resCode + " has not been canceled.")
+                time.sleep(1)
+                return None
+
         else:
             print("Invalid reservation code. Please try again.")
             time.sleep(1)
@@ -236,7 +252,9 @@ def collectRevenueData(connector):
         print(item, end=" ")
     print("")
     header()
-    
+
+
+
 
 if __name__ == '__main__' :
     gatherReservationInfo()
