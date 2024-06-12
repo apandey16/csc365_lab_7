@@ -200,11 +200,8 @@ def searchReservation(cursor):
         baseq += ' AND CODE = %s'
         args.append(reservationSearchInfo['reservationCode'])
 
-    print(baseq)
-    print(args)
     cursor.execute(baseq, args)
     results = cursor.fetchall()
-    # print(results)
 
     table = PrettyTable()
     table.field_names = ['Reservation Code', 'Room', 'Room Name', 'CheckIn', 'Checkout', 'Last Name', 'First Name',
