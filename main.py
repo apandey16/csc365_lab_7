@@ -10,7 +10,7 @@ from reservation import gatherRoomInfo, gatherReservationInfo, cancelReservation
 dbhost = 'mysql.labthreesixfive.com'
 db = 'akpravee'
 #Set to curUser = <Username>
-curUser = 'cmorro01'
+curUser = 'akpravee'
 
 def mainScreen():
     print("1. Rooms and Rates")
@@ -61,7 +61,7 @@ def main():
                 print("Cancelled Cancelation.")
             break
         elif userSelection == '4':
-            searchCritea = collectDetailedReservationInfo()
+            collectDetailedReservationInfo(cursor)
 
         elif userSelection == '5':
             collectRevenueData(cursor)
