@@ -10,7 +10,7 @@ from reservation import gatherRoomInfo, gatherReservationInfo, cancelReservation
 dbhost = 'mysql.labthreesixfive.com'
 db = 'akpravee'
 #Set to curUser = <Username>
-curUser = 'cmorro01'
+curUser = 'apande02'
 
 def mainScreen():
     print("1. Rooms and Rates")
@@ -49,7 +49,7 @@ def main():
         if userSelection == '1':
             gatherRoomInfo(cursor)
         elif userSelection == '2':
-            reservationInfo = gatherReservationInfo()
+            reservationInfo = gatherReservationInfo(cursor)
             break
             # add stuff to connect with DB
         elif userSelection == '3':

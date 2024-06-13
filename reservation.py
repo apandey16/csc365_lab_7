@@ -1,8 +1,10 @@
 # This file contains the code to get information from the user about the reservation.
 # Related to FR1, FR2, FR5
+# Add pretty table import
 
 import os
 import time
+import re
 from utils import *
 from commands import *
 from prettytable import PrettyTable
@@ -39,7 +41,7 @@ reservationSearchInfo = {
 
 def reviewReservationInfo():
     # Might want to add more robust error checking here
-    print("\nERROR\n")
+    regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
     if not reservationInfo['firstName'].isalpha():
         print("Invalid First Name")
         return False
@@ -64,6 +66,15 @@ def reviewReservationInfo():
     if not reservationInfo['adults'].isdigit():
         print("Invalid Number of Adults")
         return False
+    try:
+        regex.match(reservationInfo["checkIn"])
+        regex.match(reservationInfo["checkOut"])
+        if reservationInfo['checkIn'] > reservationInfo['checkOut']:
+            print("Invalid Date Range")
+            return False
+    except:
+        print("Invalid Date Format for CheckIn or CheckOut")
+        return False
     return True
     
 
@@ -87,7 +98,7 @@ def confirmReservation():
     else:
         return False
 
-def gatherReservationInfo():
+def gatherReservationInfo(connector):
     os.system('clear')
     header()
     print("Welcome to Our Reservation System\n")
@@ -95,16 +106,50 @@ def gatherReservationInfo():
     print("Please enter the following information to make a reservation:\n")
     reservationInfo['firstName'] = input("First Name: ")
     reservationInfo['lastName'] = input("Last Name: ")
-    reservationInfo['roomCode'] = input("Room Code: ")
-    reservationInfo['bedType'] = input("Bed Type: ")
-    reservationInfo['checkIn'] = input("Check In: ")
-    reservationInfo['checkOut'] = input("Check Out: ")
+    reservationInfo['roomCode'] = input("Room Code (or Any for no preference): ")
+    reservationInfo['bedType'] = input("Bed Type (or Any for no preference): ")
+    reservationInfo['checkIn'] = input("Check In (yyyy-mm-dd): ")
+    reservationInfo['checkOut'] = input("Check Out (yyyy-mm-dd): ")
     reservationInfo['children'] = input("Number of Children: ")
     reservationInfo['adults'] = input("Number of Adults: ")
 
     isValid = reviewReservationInfo()
-    
+    totalPeople = int(reservationInfo['children']) + int(reservationInfo['adults'])
+
     if isValid:
+        # Add DB query here
+        query = """
+                with occRooms as (
+                    select *
+                    from 
+                        lab7_reservations re join lab7_rooms ro on ro.RoomCode = re.Room 
+                    where
+                        re.CheckIn < \'%s\'
+                        AND re.CheckOut > \'%s\'
+                )
+                select * 
+                from
+                    lab7_rooms r1
+                where
+                    not exists
+                    (
+                        select * 
+                        from occRooms o
+                        where o.RoomCode = r1.RoomCode
+                    )
+                    and %d < r1.maxOcc
+                    and r1.RoomCode like \'%s\'
+                    and r1.BedType like \'%s\'
+            """
+        if reservationInfo['roomCode'] == 'Any':
+            reservationInfo['roomCode'] = '%'
+        if reservationInfo['bedType'] == 'Any':
+            reservationInfo['bedType'] = '%'
+
+        results = executeQuery(connector, query % (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['roomCode'], reservationInfo['bedType']))
+
+        print(results)
+
         confirmation = confirmReservation()
         if confirmation:
             print("Reservation Submitted!")
@@ -130,7 +175,7 @@ def cancelReservation(connector):
                 print("Processing...")
                 try:
                     query = "DELETE FROM lab7_reservations WHERE code = %s;"
-                    results = executeQuery(connector, query, (resCode,))
+                    results = executeQuery(connector, query, (resCode))
                     print("Reservation " + resCode + " has been canceled.")
                     time.sleep(1)
                     return results
