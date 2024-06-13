@@ -116,7 +116,14 @@ def gatherReservationInfo(connector):
     isValid = reviewReservationInfo()
     totalPeople = int(reservationInfo['children']) + int(reservationInfo['adults'])
 
-    if isValid:
+    query = 'select max(maxOcc) from lab7_rooms'
+    results = executeQuery(connector, query)
+    maxOcc = results[0][0]
+    if totalPeople > maxOcc:
+        print("We don't have any rooms that can accomodate that many people. \nThe total number of people in one room is %s\nPlease try again and split up the request.", maxOcc)
+        time.sleep(1)
+        return None
+    elif isValid:
         # Add DB query here
         query = """
                 with occRooms as (
