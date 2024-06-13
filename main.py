@@ -49,7 +49,7 @@ def main():
         if userSelection == '1':
             gatherRoomInfo(cursor)
         elif userSelection == '2':
-            reservationInfo = gatherReservationInfo()
+            reservationInfo = gatherReservationInfo(cursor)
             break
             # add stuff to connect with DB
         elif userSelection == '3':
