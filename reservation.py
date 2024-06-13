@@ -82,8 +82,8 @@ def reviewReservationInfo():
 def costCalc(connector,checkIn, checkOut, roomCode):
     query = """
             select r1.basePrice
-            from lab7_rooms
-            where RoomCode = \'%s\'
+            from lab7_rooms r1
+            where r1.RoomCode = \'%s\'
             """
     results = executeQuery(connector, query % (roomCode))
     cost = results[0][0]
