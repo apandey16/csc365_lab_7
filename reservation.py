@@ -7,6 +7,8 @@ import time
 import re
 from utils import *
 from commands import *
+import numpy as np
+from datetime import datetime
 from prettytable import PrettyTable
 
 def gatherRoomInfo(connector):
@@ -77,8 +79,20 @@ def reviewReservationInfo():
         return False
     return True
     
+def costCalc(connector,checkIn, checkOut, roomCode):
+    query = """
+            select r1.basePrice
+            from lab7_rooms
+            where RoomCode = \'%s\'
+            """
+    results = executeQuery(connector, query % (roomCode))
+    cost = results[0][0]
+    weekdays = np.busday_count(checkIn, checkOut, weekmask='1111100')
+    weekends = np.busday_count(checkIn, checkOut, weekmask='0000011')
+    total_cost = weekdays * cost + weekends * (cost * 1.1)
+    return total_cost
 
-def confirmReservation():
+def confirmReservation(connector):
     os.system('clear')
     header()
     print("Please review your information:")
@@ -90,7 +104,8 @@ def confirmReservation():
     print("Check Out: " + reservationInfo['checkOut'])
     print("Number of Children: " + reservationInfo['children'])
     print("Number of Adults: " + reservationInfo['adults'])
-    print("Is this information correct? (y/n)")
+    print("Total Cost: " + costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode']))
+    print("Would you like to confirm this reservation? (y/n)")
     response = input()
     if response == 'y':
         time.sleep(0.5)
@@ -155,9 +170,30 @@ def gatherReservationInfo(connector):
 
         results = executeQuery(connector, query % (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['roomCode'], reservationInfo['bedType']))
 
+        # Print using PrettyTable
         print(results)
+        table = PrettyTable()
+        table.field_names = ["Option", "Room Code", "Room Name", "Beds", "Bed Type", "Max Occupancy", "Base Price", "Decor"]
+        for i, row in enumerate(results):
+            table.add_row([i, row[0], row[1], row[2], row[3], row[4], row[5], row[6]])
+        print(table)
+        # Add prompt to select a room
+        selectedRoom = None
+        while True:
+            roomSelection = input("Please select a room from the list above: ")
+            
+            if roomSelection.isnumeric():
+                roomSelection = int(roomSelection)
+                if roomSelection < len(results):
+                    selectedRoom = results[roomSelection]
+                    reservationInfo['roomCode'] = selectedRoom[0]
+                    reservationInfo['bedType'] = selectedRoom[3]
+                    break
+                else:
+                    print("Invalid room selection. Please try again.")
 
-        confirmation = confirmReservation()
+        # Add prompt to confirm reservation
+        confirmation = confirmReservation(connector)
         if confirmation:
             print("Reservation Submitted!")
             return reservationInfo
