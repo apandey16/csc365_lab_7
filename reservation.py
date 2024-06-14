@@ -10,7 +10,7 @@ import re
 from utils import *
 from commands import *
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from prettytable import PrettyTable
 
 def gatherRoomInfo(connector):
@@ -69,6 +69,10 @@ def reviewReservationInfo():
         regex.match(reservationInfo["checkOut"])
         if reservationInfo['checkIn'] > reservationInfo['checkOut']:
             print("Invalid Date Range")
+            return False
+        today = date.today()
+        if reservationInfo['checkIn'] < str(today):
+            print("Invalid CheckIn Date")
             return False
     except:
         print("Invalid Date Format for CheckIn or CheckOut")
@@ -255,17 +259,19 @@ def gatherReservationInfo(connector):
         # Add prompt to confirm reservation
         confirmation = confirmReservation(connector)
         if confirmation:
-            print("Reservation Submitted!")
+            print("Reservation Processing...")
             # Add DB query to insert reservation
-            query = """
-                    insert into lab7_reservations (code, Room, CheckIn, CheckOut, Rate, LastName, FirstName, Adults, Kids)
-                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            insertquery = """
+                    insert into lab7_reservations
+                    values (%d, %s, %s, %s, %f, %s, %s, %d, %d)
                     """
             totalCost = costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode'])
             code = ''.join(random.choices(string.digits, k=6))
             rate = totalCost / np.busday_count(reservationInfo['checkIn'], reservationInfo['checkOut'], weekmask='1111111')
             # try:
-            results = executeQuery(connector, query % (code, reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], rate, reservationInfo['lastName'], reservationInfo['firstName'], reservationInfo['adults'], reservationInfo['children']))
+            vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
+            results = executeQuery(connector, insertquery % (vals))
+            print("Reservation " + code + " has been made. Thank you for choosing Dijkstra's Inn!")
             time.sleep(1)
             return results
             # except:
