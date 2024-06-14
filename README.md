@@ -14,7 +14,7 @@ Devs: Ansh, Cameron, AP
 The project was split up pretty evenly. GitHub was acting a bit strange with regards to insights so the work was split as follows:
 
 **Python Interface:** Ansh <br>
-**DBMS Access Setup:** AP <br>
+**DBMS Access Setup:** AP/Cameron <br>
 **FR1:** Cameron <br>
 **FR2:** Ansh/AP <br>
 **FR3:** Ansh <br>
