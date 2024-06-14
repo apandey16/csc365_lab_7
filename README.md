@@ -11,14 +11,14 @@ Devs: Ansh, Cameron, AP
 6. Input lab365 password
 
 # Division of Work
-The project was split up pretty evenly. GitHub was acting a bit strange with reagrds to insights to the work was spilt as follow:
+The project was split up pretty evenly. GitHub was acting a bit strange with regards to insights so the work was split as follows:
 
-Python Interface: Ansh
-DBMS Access Setup: AP
-FR1: Cameron
-FR2: Ansh/AP
-FR3: Ansh
-FR4: AP
-FR5: Cameron
+**Python Interface:** Ansh <br>
+**DBMS Access Setup:** AP <br>
+**FR1:** Cameron <br>
+**FR2:** Ansh/AP <br>
+**FR3:** Ansh <br>
+**FR4:** AP <br>
+**FR5:** Cameron <br>
 
 # Known Issues
