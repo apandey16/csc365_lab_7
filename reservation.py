@@ -174,6 +174,13 @@ def gatherReservationInfo(connector):
 
         # Print using PrettyTable
         print(results)
+        if len(results) == 0:
+            print("No rooms available for the given criteria. We are searching for alternatives.")
+            # TODO: Add search for alternative rooms
+            time.sleep(1)
+            return None
+        
+
         table = PrettyTable()
         table.field_names = ["Option", "Room Code", "Room Name", "Beds", "Bed Type", "Max Occupancy", "Base Price", "Decor"]
         for i, row in enumerate(results):
