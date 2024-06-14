@@ -82,7 +82,7 @@ def costCalc(connector,checkIn, checkOut, roomCode):
             where r1.RoomCode = \'%s\'
             """
     results = executeQuery(connector, query % (roomCode))
-    cost = results[0][0]
+    cost = float(results[0][0])
     weekdays = np.busday_count(checkIn, checkOut, weekmask='1111100')
     weekends = np.busday_count(checkIn, checkOut, weekmask='0000011')
     total_cost = weekdays * cost + weekends * (cost * 1.1)
@@ -100,7 +100,7 @@ def confirmReservation(connector):
     print("Check Out: " + reservationInfo['checkOut'])
     print("Number of Children: " + reservationInfo['children'])
     print("Number of Adults: " + reservationInfo['adults'])
-    print("Total Cost: " + costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode']))
+    print("Total Cost: ", costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode']))
     print("Would you like to confirm this reservation? (y/n)")
     response = input()
     if response == 'y':
@@ -165,10 +165,12 @@ def gatherReservationInfo(connector):
             reservationInfo['bedType'] = '%'
 
         results = executeQuery(connector, query % (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['roomCode'], reservationInfo['bedType']))
-
+        #if the results of their search is empty
         if not results:
+            #print out that their direct search yieleded nothing. but don't print anything else yet.
             print("There are unfortunately no availabilities given your current criteria.")
-            print("Here are some alternative rooms ")
+
+            #This is the logic that gets the similar bedtype rooms
             altquery = """
                         WITH occRooms AS (
                             SELECT *
@@ -188,10 +190,9 @@ def gatherReservationInfo(connector):
                     """
             connector.execute(altquery,
                            (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['bedType']))
-            results = connector.fetchall()
+            bedresults = connector.fetchall()
 
-        if not results:
-            print("No rooms with similar bed types found. Suggesting rooms with different dates.")
+            #this query will get every room given their chosen dates.
             altquery2 = """
                     WITH occRooms AS (
                         SELECT *
@@ -208,9 +209,27 @@ def gatherReservationInfo(connector):
                     ) AND %s < r1.maxOcc
                     LIMIT 5
                 """
+
             connector.execute(altquery2,
                            (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople))
-            results = connector.fetchall()
+            allresults = connector.fetchall()
+            #now we put those two sets of results together
+            seen = set()
+            unionresults = []
+            for row in bedresults + allresults:
+                if row[0] not in seen:
+                    unionresults.append(row)
+                    seen.add(row[0])
+            results = unionresults
+            #if the unioned resulst has more than 5
+            if(len(results) > 5):
+                results = results[:5]
+            #we couldn't find them anything at all.
+            if not results:
+                print("There are no availabilities given your current criteria.")
+            else:
+                print("Here are some rooms that have the same check-in/check-out criteria priotizied by "
+                      "similar bedtype to what you requested (if you requested a specific bedtype)")
 
         # Print using PrettyTable
         table = PrettyTable()
