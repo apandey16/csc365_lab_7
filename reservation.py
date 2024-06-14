@@ -8,7 +8,7 @@ import re
 from utils import *
 from commands import *
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from prettytable import PrettyTable
 
 def gatherRoomInfo(connector):
@@ -55,12 +55,6 @@ def reviewReservationInfo():
         return False
     if not reservationInfo['bedType'].isalpha():
         print("Invalid Bed Type")
-        return False
-    if not reservationInfo['checkIn'].isalpha():
-        print("Invalid Check In")
-        return False
-    if not reservationInfo['checkOut'].isalpha():
-        print("Invalid Check Out")
         return False
     if not reservationInfo['children'].isdigit():
         print("Invalid Number of Children")
@@ -170,8 +164,54 @@ def gatherReservationInfo(connector):
 
         results = executeQuery(connector, query % (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['roomCode'], reservationInfo['bedType']))
 
+        if not results:
+            print("There are unfortunately no availabilities given your current criteria.")
+            print("Here are some alternative rooms ")
+            altquery = """
+                        WITH occRooms AS (
+                            SELECT *
+                            FROM lab7_reservations re
+                            JOIN lab7_rooms ro ON ro.RoomCode = re.Room 
+                            WHERE re.CheckIn < %s AND re.CheckOut > %s
+                        )
+                        SELECT *
+                        FROM lab7_rooms r1
+                        WHERE NOT EXISTS (
+                            SELECT * 
+                            FROM occRooms o
+                            WHERE o.RoomCode = r1.RoomCode
+                        ) AND %s < r1.maxOcc
+                          AND r1.BedType LIKE %s
+                        LIMIT 5
+                    """
+            connector.execute(altquery,
+                           (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['bedType']))
+            results = connector.fetchall()
+
+        if not results:
+            print("No rooms with similar bed types found. Suggesting rooms with different dates.")
+            altquery2 = """
+                    WITH occRooms AS (
+                        SELECT *
+                        FROM lab7_reservations re
+                        JOIN lab7_rooms ro ON ro.RoomCode = re.Room 
+                        WHERE re.CheckIn < %s AND re.CheckOut > %s
+                    )
+                    SELECT *
+                    FROM lab7_rooms r1
+                    WHERE NOT EXISTS (
+                        SELECT * 
+                        FROM occRooms o
+                        WHERE o.RoomCode = r1.RoomCode
+                    ) AND %s < r1.maxOcc
+                    LIMIT 5
+                """
+            connector.execute(altquery2,
+                           (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople))
+            results = connector.fetchall()
+
         # Print using PrettyTable
-        print(results)
+        # print(results)
         table = PrettyTable()
         table.field_names = ["Option", "Room Code", "Room Name", "Beds", "Bed Type", "Max Occupancy", "Base Price", "Decor"]
         for i, row in enumerate(results):
@@ -261,27 +301,6 @@ def collectDetailedReservationInfo():
     #     time.sleep(1)
     #     collectDetailedReservationInfo()
 
-
-# def reviewDetailedReservationInfo():
-#     if reservationSearchInfo['firstName'] == '\n' or (not reservationSearchInfo['firstName'].isalpha()):
-#         print("Invalid First Name")
-#         return False
-#     if not reservationSearchInfo['lastName'].isalpha():
-#         print("Invalid Last Name")
-#         return False
-#     if not reservationSearchInfo['roomCode'].isalnum():
-#         print("Invalid Room Code")
-#         return False
-#     if not reservationSearchInfo['reservationCode'].isalpha():
-#         print("Invalid Reservation Code Type")
-#         return False
-#     if not reservationSearchInfo['startDate'].isalpha():
-#         print("Invalid Start Date")
-#         return False
-#     if not reservationSearchInfo['endDate'].isalpha():
-#         print("Invalid End Date")
-#         return False
-#     return True
     
 def confirmDetailedReservation():
     os.system('clear')

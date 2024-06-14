@@ -10,7 +10,7 @@ from reservation import gatherRoomInfo, gatherReservationInfo, cancelReservation
 dbhost = 'mysql.labthreesixfive.com'
 db = 'akpravee'
 #Set to curUser = <Username>
-curUser = 'apande02'
+curUser = 'akpravee'
 
 def mainScreen():
     print("1. Rooms and Rates")
