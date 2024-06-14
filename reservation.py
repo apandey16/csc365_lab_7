@@ -3,6 +3,8 @@
 # Add pretty table import
 
 import os
+import random
+import string
 import time
 import re
 from utils import *
@@ -196,7 +198,22 @@ def gatherReservationInfo(connector):
         confirmation = confirmReservation(connector)
         if confirmation:
             print("Reservation Submitted!")
-            return reservationInfo
+            # Add DB query to insert reservation
+            query = """
+                    insert into lab7_reservations (code, Room, CheckIn, CheckOut, Rate, LastName, FirstName, Adults, Kids)
+                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+            totalCost = costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode'])
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            rate = totalCost / np.busday_count(reservationInfo['checkIn'], reservationInfo['checkOut'], weekmask='1111111')
+            try:
+                results = executeQuery(connector, query, (code, reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], rate, reservationInfo['lastName'], reservationInfo['firstName'], reservationInfo['adults'], reservationInfo['children']))
+                time.sleep(1)
+                return results
+            except:
+                print("An error occurred. Please try again.")
+                time.sleep(1)
+                return None
         else:
             gatherReservationInfo()
     else:
