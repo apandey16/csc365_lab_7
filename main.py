@@ -49,8 +49,8 @@ def main():
         if userSelection == '1':
             gatherRoomInfo(cursor)
         elif userSelection == '2':
-            reservationInfo = gatherReservationInfo(cursor)
-            break
+            reservationInfo, code = gatherReservationInfo(cursor)
+            print("Reservation " + code + " has been made. Thank you for choosing Dijkstra's Inn!")
             # add stuff to connect with DB
         elif userSelection == '3':
             resCode = cancelReservation(cursor)

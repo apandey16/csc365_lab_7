@@ -271,9 +271,8 @@ def gatherReservationInfo(connector):
             # try:
             vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
             results = executeQuery(connector, insertquery % (vals))
-            print("Reservation " + code + " has been made. Thank you for choosing Dijkstra's Inn!")
             time.sleep(1)
-            return results
+            return results, code
             # except:
             #     print("An error occurred. Please try again.")
             #     time.sleep(1)
