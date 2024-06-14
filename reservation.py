@@ -270,11 +270,17 @@ def gatherReservationInfo(connector):
             rate = totalCost / np.busday_count(reservationInfo['checkIn'], reservationInfo['checkOut'], weekmask='1111111')
             # try:
             vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
-            results = executeQuery(connector, insertquery % (vals))
+            # results = executeQuery(connector, insertquery % (vals))
+            # connector.commit()
+            with connector.cursor() as cursor:
+                cursor.execute(insertquery, vals)
+                connector.commit()
             time.sleep(1)
             return results, code
-            # except:
-            #     print("An error occurred. Please try again.")
+            # except Exception as e:
+            #     connector.rollback()
+            #     print("An error occurred:, ", e)
+            #     print(Please try again.")
             #     time.sleep(1)
             #     return None
         else:
