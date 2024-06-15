@@ -3,10 +3,14 @@
 # Add pretty table import
 
 import os
+import random
+import string
 import time
 import re
 from utils import *
 from commands import *
+import numpy as np
+from datetime import date, datetime, timedelta
 from prettytable import PrettyTable
 
 def gatherRoomInfo(connector):
@@ -54,12 +58,6 @@ def reviewReservationInfo():
     if not reservationInfo['bedType'].isalpha():
         print("Invalid Bed Type")
         return False
-    if not reservationInfo['checkIn'].isalpha():
-        print("Invalid Check In")
-        return False
-    if not reservationInfo['checkOut'].isalpha():
-        print("Invalid Check Out")
-        return False
     if not reservationInfo['children'].isdigit():
         print("Invalid Number of Children")
         return False
@@ -72,13 +70,29 @@ def reviewReservationInfo():
         if reservationInfo['checkIn'] > reservationInfo['checkOut']:
             print("Invalid Date Range")
             return False
+        today = date.today()
+        if reservationInfo['checkIn'] < str(today):
+            print("Invalid CheckIn Date")
+            return False
     except:
         print("Invalid Date Format for CheckIn or CheckOut")
         return False
     return True
     
+def costCalc(connector,checkIn, checkOut, roomCode):
+    query = """
+            select r1.basePrice
+            from lab7_rooms r1
+            where r1.RoomCode = \'%s\'
+            """
+    results = executeQuery(connector, query % (roomCode))
+    cost = float(results[0][0])
+    weekdays = np.busday_count(checkIn, checkOut, weekmask='1111100')
+    weekends = np.busday_count(checkIn, checkOut, weekmask='0000011')
+    total_cost = weekdays * cost + weekends * (cost * 1.1)
+    return total_cost
 
-def confirmReservation():
+def confirmReservation(connector):
     os.system('clear')
     header()
     print("Please review your information:")
@@ -90,7 +104,8 @@ def confirmReservation():
     print("Check Out: " + reservationInfo['checkOut'])
     print("Number of Children: " + reservationInfo['children'])
     print("Number of Adults: " + reservationInfo['adults'])
-    print("Is this information correct? (y/n)")
+    print("Total Cost: ", costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode']))
+    print("Would you like to confirm this reservation? (y/n)")
     response = input()
     if response == 'y':
         time.sleep(0.5)
@@ -98,7 +113,7 @@ def confirmReservation():
     else:
         return False
 
-def gatherReservationInfo(connector):
+def gatherReservationInfo(connector, conn):
     os.system('clear')
     header()
     print("Welcome to Our Reservation System\n")
@@ -116,7 +131,14 @@ def gatherReservationInfo(connector):
     isValid = reviewReservationInfo()
     totalPeople = int(reservationInfo['children']) + int(reservationInfo['adults'])
 
-    if isValid:
+    query = 'select max(maxOcc) from lab7_rooms'
+    results = executeQuery(connector, query)
+    maxOcc = results[0][0]
+    if totalPeople > maxOcc:
+        print("We don't have any rooms that can accomodate that many people. \nThe total number of people in one room is %s\nPlease try again and split up the request.", maxOcc)
+        time.sleep(1)
+        return None
+    elif isValid:
         # Add DB query here
         query = """
                 with occRooms as (
@@ -147,20 +169,124 @@ def gatherReservationInfo(connector):
             reservationInfo['bedType'] = '%'
 
         results = executeQuery(connector, query % (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['roomCode'], reservationInfo['bedType']))
+        #if the results of their search is empty
+        if not results:
+            #print out that their direct search yieleded nothing. but don't print anything else yet.
+            print("There are unfortunately no availabilities given your current criteria.")
 
-        print(results)
+            #This is the logic that gets the similar bedtype rooms
+            altquery = """
+                        WITH occRooms AS (
+                            SELECT *
+                            FROM lab7_reservations re
+                            JOIN lab7_rooms ro ON ro.RoomCode = re.Room 
+                            WHERE re.CheckIn < %s AND re.CheckOut > %s
+                        )
+                        SELECT *
+                        FROM lab7_rooms r1
+                        WHERE NOT EXISTS (
+                            SELECT * 
+                            FROM occRooms o
+                            WHERE o.RoomCode = r1.RoomCode
+                        ) AND %s < r1.maxOcc
+                          AND r1.BedType LIKE %s
+                        LIMIT 5
+                    """
+            connector.execute(altquery,
+                           (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople, reservationInfo['bedType']))
+            bedresults = connector.fetchall()
 
-        confirmation = confirmReservation()
+            #this query will get every room given their chosen dates.
+            altquery2 = """
+                    WITH occRooms AS (
+                        SELECT *
+                        FROM lab7_reservations re
+                        JOIN lab7_rooms ro ON ro.RoomCode = re.Room 
+                        WHERE re.CheckIn < %s AND re.CheckOut > %s
+                    )
+                    SELECT *
+                    FROM lab7_rooms r1
+                    WHERE NOT EXISTS (
+                        SELECT * 
+                        FROM occRooms o
+                        WHERE o.RoomCode = r1.RoomCode
+                    ) AND %s < r1.maxOcc
+                    LIMIT 5
+                """
+
+            connector.execute(altquery2,
+                           (reservationInfo['checkOut'], reservationInfo['checkIn'], totalPeople))
+            allresults = connector.fetchall()
+            #now we put those two sets of results together
+            seen = set()
+            unionresults = []
+            for row in bedresults + allresults:
+                if row[0] not in seen:
+                    unionresults.append(row)
+                    seen.add(row[0])
+            results = unionresults
+            #if the unioned resulst has more than 5
+            if(len(results) > 5):
+                results = results[:5]
+            #we couldn't find them anything at all.
+            if not results:
+                print("There are no availabilities given your current criteria.")
+            else:
+                print("Here are some rooms that have the same check-in/check-out criteria priotizied by "
+                      "similar bedtype to what you requested (if you requested a specific bedtype)")
+
+        # Print using PrettyTable
+        table = PrettyTable()
+        table.field_names = ["Option", "Room Code", "Room Name", "Beds", "Bed Type", "Max Occupancy", "Base Price", "Decor"]
+        for i, row in enumerate(results):
+            table.add_row([i, row[0], row[1], row[2], row[3], row[4], row[5], row[6]])
+        print(table)
+        # Add prompt to select a room
+        selectedRoom = None
+        while True:
+            roomSelection = input("Please select a room from the list above: ")
+            
+            if roomSelection.isnumeric():
+                roomSelection = int(roomSelection)
+                if roomSelection < len(results):
+                    selectedRoom = results[roomSelection]
+                    reservationInfo['roomCode'] = selectedRoom[0]
+                    reservationInfo['bedType'] = selectedRoom[3]
+                    break
+                else:
+                    print("Invalid room selection. Please try again.")
+
+        # Add prompt to confirm reservation
+        confirmation = confirmReservation(connector)
         if confirmation:
-            print("Reservation Submitted!")
-            return reservationInfo
+            print("Reservation Processing...")
+            # Add DB query to insert reservation
+            insertquery = """
+                    insert into lab7_reservations
+                    values (%d, \"%s\", \"%s\",\"%s\", %f, \"%s\", \"%s\", %d, %d)
+                    """
+            totalCost = costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode'])
+            code = ''.join(random.choices(string.digits, k=6))
+            rate = totalCost / np.busday_count(reservationInfo['checkIn'], reservationInfo['checkOut'], weekmask='1111111')
+            try:
+                vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
+                results = executeQuery(connector, insertquery % (vals))
+                time.sleep(1)
+                conn.commit()
+                return results, code
+            except Exception as e:
+                conn.rollback()
+                print("An error occurred:, ", e)
+                print("Please try again.")
+                time.sleep(1)
+                return None
         else:
             gatherReservationInfo()
     else:
         time.sleep(1)
         gatherReservationInfo()
 
-def cancelReservation(connector):
+def cancelReservation(connector, conn):
     os.system('clear')
     header()
     print("Reservation Cancelation\n") 
@@ -175,7 +301,8 @@ def cancelReservation(connector):
                 print("Processing...")
                 try:
                     query = "DELETE FROM lab7_reservations WHERE code = %s;"
-                    results = executeQuery(connector, query, (resCode))
+                    results = executeQuery(connector, query % (resCode))
+                    conn.commit()
                     print("Reservation " + resCode + " has been canceled.")
                     time.sleep(1)
                     return results
@@ -212,7 +339,8 @@ def collectDetailedReservationInfo(cursor):
     if confirmation:
         searchReservation(cursor)
     else:
-        collectDetailedReservationInfo(cursor)
+
+        collectDetailedReservationInfo()
 
 
 def searchReservation(cursor):
