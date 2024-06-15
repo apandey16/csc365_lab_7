@@ -263,18 +263,15 @@ def gatherReservationInfo(connector):
             # Add DB query to insert reservation
             insertquery = """
                     insert into lab7_reservations
-                    values (%d, %s, %s, %s, %f, %s, %s, %d, %d)
+                    values (%d, \"%s\", \"%s\",\"%s\", %f, \"%s\", \"%s\", %d, %d)
                     """
             totalCost = costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode'])
             code = ''.join(random.choices(string.digits, k=6))
             rate = totalCost / np.busday_count(reservationInfo['checkIn'], reservationInfo['checkOut'], weekmask='1111111')
             # try:
             vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
-            # results = executeQuery(connector, insertquery % (vals))
-            # connector.commit()
-            with connector.cursor() as cursor:
-                cursor.execute(insertquery, vals)
-                connector.commit()
+            results = executeQuery(connector, insertquery % (vals))
+            connector.commit()
             time.sleep(1)
             return results, code
             # except Exception as e:
