@@ -268,25 +268,25 @@ def gatherReservationInfo(connector, conn):
             totalCost = costCalc(connector, reservationInfo['checkIn'], reservationInfo['checkOut'], reservationInfo['roomCode'])
             code = ''.join(random.choices(string.digits, k=6))
             rate = totalCost / np.busday_count(reservationInfo['checkIn'], reservationInfo['checkOut'], weekmask='1111111')
-            # try:
-            vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
-            results = executeQuery(connector, insertquery % (vals))
-            time.sleep(1)
-            conn.commit()
-            return results, code
-            # except Exception as e:
-            #     connector.rollback()
-            #     print("An error occurred:, ", e)
-            #     print(Please try again.")
-            #     time.sleep(1)
-            #     return None
+            try:
+                vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
+                results = executeQuery(connector, insertquery % (vals))
+                time.sleep(1)
+                conn.commit()
+                return results, code
+            except Exception as e:
+                conn.rollback()
+                print("An error occurred:, ", e)
+                print("Please try again.")
+                time.sleep(1)
+                return None
         else:
             gatherReservationInfo()
     else:
         time.sleep(1)
         gatherReservationInfo()
 
-def cancelReservation(connector):
+def cancelReservation(connector, conn):
     os.system('clear')
     header()
     print("Reservation Cancelation\n") 
@@ -301,7 +301,8 @@ def cancelReservation(connector):
                 print("Processing...")
                 try:
                     query = "DELETE FROM lab7_reservations WHERE code = %s;"
-                    results = executeQuery(connector, query, (resCode))
+                    results = executeQuery(connector, query % (resCode))
+                    conn.commit()
                     print("Reservation " + resCode + " has been canceled.")
                     time.sleep(1)
                     return results

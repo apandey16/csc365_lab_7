@@ -50,14 +50,14 @@ def main():
             gatherRoomInfo(cursor)
         elif userSelection == '2':
             reservationInfo, code = gatherReservationInfo(cursor, conn)
-            print("Reservation " + code + " has been made. Thank you for choosing Dijkstra's Inn!")
+            print("Reservation ", code, " has been made. Thank you for choosing Dijkstra's Inn!")
             # add stuff to connect with DB
         # UPDATE FOR CONN
         elif userSelection == '3':
-            resCode = cancelReservation(cursor)
+            resCode = cancelReservation(cursor, conn)
             # Connect to DB, check reservation code and  delete reservation
             if resCode is not None:
-                print("Reservation " + resCode + " has been canceled")
+                pass
             else:
                 print("Cancelled Cancelation.")
             break
