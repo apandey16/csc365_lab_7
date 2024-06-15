@@ -21,4 +21,5 @@ The project was split up pretty evenly. GitHub was acting a bit strange with reg
 **FR4:** AP <br>
 **FR5:** Cameron <br>
 
-# Known Issues
+# Known Issues/Future Work
+1. If there is no exact match we currently don't look at dates nearby because of the way the SQL query is set up. This would be a future update if we continued the project.
