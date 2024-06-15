@@ -113,7 +113,7 @@ def confirmReservation(connector):
     else:
         return False
 
-def gatherReservationInfo(connector):
+def gatherReservationInfo(connector, conn):
     os.system('clear')
     header()
     print("Welcome to Our Reservation System\n")
@@ -271,8 +271,8 @@ def gatherReservationInfo(connector):
             # try:
             vals = (int(code), reservationInfo['roomCode'], reservationInfo['checkIn'], reservationInfo['checkOut'], float(rate), reservationInfo['lastName'], reservationInfo['firstName'], int(reservationInfo['adults']), int(reservationInfo['children']))
             results = executeQuery(connector, insertquery % (vals))
-            connector.commit()
             time.sleep(1)
+            conn.commit()
             return results, code
             # except Exception as e:
             #     connector.rollback()
