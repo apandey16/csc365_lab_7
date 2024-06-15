@@ -60,7 +60,6 @@ def main():
                 pass
             else:
                 print("Cancelled Cancelation.")
-            break
         elif userSelection == '4':
             collectDetailedReservationInfo(cursor)
 
