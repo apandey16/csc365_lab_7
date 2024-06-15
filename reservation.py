@@ -319,7 +319,7 @@ def cancelReservation(connector, conn):
             time.sleep(1)
 
 
-def collectDetailedReservationInfo():
+def collectDetailedReservationInfo(cursor):
     os.system('clear')
     header()
     print("Search for a reservation using the following fields. \n")
@@ -335,17 +335,56 @@ def collectDetailedReservationInfo():
 
     # isValid = reviewDetailedReservationInfo()
 
-    # if isValid:
     confirmation = confirmDetailedReservation()
     if confirmation:
-        return reservationSearchInfo
+        searchReservation(cursor)
     else:
-        collectDetailedReservationInfo()
-    # else:
-    #     time.sleep(1)
-    #     collectDetailedReservationInfo()
 
-    
+        collectDetailedReservationInfo()
+
+
+def searchReservation(cursor):
+    os.system('clear')
+    header()
+    baseq = gatherReservations
+    args = []
+
+    if reservationSearchInfo['firstName']:
+        baseq += ' AND firstName LIKE %s'
+        args.append(reservationSearchInfo['firstName'] + '%')
+
+    if reservationSearchInfo['lastName']:
+        baseq += ' AND lastname LIKE %s'
+        args.append(reservationSearchInfo['lastName'] + '%')
+
+    if reservationSearchInfo['startDate']:
+        baseq += ' AND CheckIn >= %s'
+        args.append(reservationSearchInfo['startDate'] + '%')
+
+    if reservationSearchInfo['endDate']:
+        baseq += ' AND CheckOut <= %s'
+        args.append(reservationSearchInfo['endDate'] + '%')
+
+    if reservationSearchInfo['roomCode']:
+        baseq += ' AND Room = %s'
+        args.append(reservationSearchInfo['roomCode'])
+
+    if reservationSearchInfo['reservationCode']:
+        baseq += ' AND CODE = %s'
+        args.append(reservationSearchInfo['reservationCode'])
+
+    cursor.execute(baseq, args)
+    results = cursor.fetchall()
+
+    table = PrettyTable()
+    table.field_names = ['Reservation Code', 'Room', 'Room Name', 'CheckIn', 'Checkout', 'Last Name', 'First Name',
+                         'Adults', 'Kids']
+
+    for row in results:
+        table.add_row(row)
+    print(table)
+
+
 def confirmDetailedReservation():
     os.system('clear')
     header()

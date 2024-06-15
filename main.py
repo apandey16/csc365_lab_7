@@ -62,7 +62,7 @@ def main():
                 print("Cancelled Cancelation.")
             break
         elif userSelection == '4':
-            searchCritea = collectDetailedReservationInfo()
+            collectDetailedReservationInfo(cursor)
 
         elif userSelection == '5':
             collectRevenueData(cursor)

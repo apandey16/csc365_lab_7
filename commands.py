@@ -47,3 +47,11 @@ recentLength as (
 select Room, RoomName, Beds, bedType, maxOcc, basePrice, decor, Popularity, earliestOpening, lengthOfRecentStay from popularity natural join recentStay natural join recentLength join lab7_rooms on lab7_rooms.RoomCode = popularity.Room
 order by popularity.Popularity desc
 """
+
+
+gatherReservations = """
+    SELECT CODE, Room, RoomName, CheckIn, Checkout, LastName, FirstName, Adults, Kids
+    FROM lab7_reservations
+    JOIN lab7_rooms ON lab7_rooms.RoomCode = lab7_reservations.Room
+    WHERE true
+    """
